@@ -8,6 +8,7 @@ const toRecipients = {
 };
 
 const fs = require("fs");
+const ics = require('ics');
 
 // for pdf file attachment
 pdfAttachmentPath = __dirname + "\\attachment.pdf";
@@ -16,6 +17,35 @@ pdfAttachmentContent = fs.readFileSync(pdfAttachmentPath).toString("base64");
 // for text file attachment
 txtAttachmentPath = __dirname + "\\attachment.txt";
 txtAttachmentContent = fs.readFileSync(txtAttachmentPath).toString("base64");
+
+// for ics file attachment
+const event = {
+  start: [2022, 12, 25, 6, 30],
+  duration: { hours: 6, minutes: 30 },
+  title: 'Bolder Boulder',
+  description: 'Annual 10-kilometer run in Boulder, Colorado',
+  location: 'Folsom Field, University of Colorado (finish line)',
+  url: 'http://www.bolderboulder.com/',
+  geo: { lat: 40.0095, lon: 105.2669 },
+  categories: ['10k races', 'Memorial Day Weekend', 'Boulder CO'],
+  status: 'CONFIRMED',
+  busyStatus: 'BUSY',
+  organizer: { name: 'Admin', email: 'Race@BolderBOULDER.com' },
+  attendees: [
+    { name: 'Adam Gibbons', email: 'adam@example.com', rsvp: true, partstat: 'ACCEPTED', role: 'REQ-PARTICIPANT' },
+    { name: 'Brittany Seaton', email: 'brittany@example2.org', dir: 'https://linkedin.com/in/brittanyseaton', role: 'OPT-PARTICIPANT' }
+  ]
+};
+
+icsAttachmentPath = __dirname + "\\attachment.ics";
+ics.createEvent(event, (error, value) => {
+  if (error) {
+    throw error;
+  }
+
+  fs.writeFileSync(icsAttachmentPath, value);
+})
+icsAttachmentContent = fs.readFileSync(icsAttachmentPath).toString("base64");
 
 const emailAttachments = [
   {
@@ -27,9 +57,13 @@ const emailAttachments = [
     contentBytesBase64: txtAttachmentContent,
     name: "attachment.txt",
     attachmentType: "txt",
+  },
+  {
+    contentBytesBase64: icsAttachmentContent,
+    name: "attachment.ics",
+    attachmentType: "pdf" // 'ics' is not currently a supported attachmentType. attachmentType is used to define the MIME type in the SMTP protocol
   }
 ];
-
 
 const client = new EmailClient(connectionString);
 
